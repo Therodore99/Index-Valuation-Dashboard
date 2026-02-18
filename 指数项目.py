@@ -54,7 +54,7 @@ def real_time():
         pass
 
 
-# 历史行情：获取历史的日频行情数据
+# 历史行情：获取历史的日频行情数据1
 def history_quotes():
     thsUrl = 'https://quantapi.51ifind.com/api/v1/cmd_history_quotation'
     thsPara = {"codes":
