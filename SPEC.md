@@ -119,7 +119,7 @@ outputs/hstech_1y_position.png
 
 项目目录：
 
-idea_project/
+Index-Valuation-Dashboard/
   ├── 指数项目.py
   ├── SPEC.md
   ├── data/
