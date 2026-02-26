@@ -116,6 +116,8 @@ def fetch_hstech_1y():
     response = THS_DS(
         CONFIG["INDEX_CODE"],
         CONFIG["INDICATOR_NAME"],
+        '',
+        '',
         start_str,
         end_str,
     )
