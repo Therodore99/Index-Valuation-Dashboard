@@ -1,0 +1,3 @@
+﻿iFinDPy
+pandas
+matplotlib
