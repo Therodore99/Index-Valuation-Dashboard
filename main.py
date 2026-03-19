@@ -1,13 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-"""项目入口。
-
-运行方式：
-    python main.py
-
-职责边界：
-- 这里只做流程调度，不放具体业务细节。
-- 具体登录、拉数、缓存、计算、画图分别交给对应模块。
-"""
+"""项目入口。"""
 
 import os
 import sys
@@ -15,20 +7,13 @@ import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
-from config import (
-    DATA_DIR,
-    DEFAULT_WINDOW_DAYS,
-    DEFAULT_WINDOW_TAG,
-    INDEXES,
-    INDICATORS,
-    OUTPUT_DIR,
-)
+from config import DATA_DIR, DEFAULT_WINDOW_DAYS, DEFAULT_WINDOW_TAG, INDEXES, INDICATORS, OUTPUT_DIR
 from core.calculator import calculate_metrics
 from core.data_manager import get_series_with_incremental_update
+from core.exporter import export_pe_pb_combo, export_single_indicator
 from core.ifind_client import IFindClient
-from core.plotter import generate_position_chart
 from utils.date_utils import get_window_dates
-from utils.file_utils import build_cache_path, build_output_path, ensure_dir
+from utils.file_utils import build_cache_path, ensure_dir
 
 
 def print_report(index_name: str, indicator_name: str, metrics: dict) -> None:
@@ -50,7 +35,7 @@ def print_report(index_name: str, indicator_name: str, metrics: dict) -> None:
 
 
 def run() -> None:
-    """主流程：按配置遍历指数和指标，完成缓存更新、计算和出图。"""
+    """主流程：按配置遍历指数和指标，完成缓存更新、计算和模板化导出。"""
     ensure_dir(DATA_DIR)
     ensure_dir(OUTPUT_DIR)
 
@@ -63,6 +48,7 @@ def run() -> None:
     for index_key, index_cfg in INDEXES.items():
         index_name = index_cfg["display_name"]
         index_code = index_cfg["code"]
+        success_results = {}
 
         for indicator_key, indicator_cfg in INDICATORS.items():
             indicator_name = indicator_cfg["name"]
@@ -74,7 +60,6 @@ def run() -> None:
             )
 
             cache_path = build_cache_path(DATA_DIR, index_key, indicator_key)
-            output_path = build_output_path(OUTPUT_DIR, index_key, indicator_key, DEFAULT_WINDOW_TAG)
 
             try:
                 window_df = get_series_with_incremental_update(
@@ -93,15 +78,42 @@ def run() -> None:
                 metrics = calculate_metrics(window_df)
                 print_report(index_name, indicator_name, metrics)
 
-                title = f"{index_name} {indicator_name} {DEFAULT_WINDOW_TAG} 区间位置"
-                generate_position_chart(metrics=metrics, title=title, output_path=output_path)
+                output_path = export_single_indicator(
+                    index_key=index_key,
+                    index_name=index_name,
+                    indicator_key=indicator_key,
+                    indicator_name=indicator_name,
+                    df=window_df,
+                    metrics=metrics,
+                    output_dir=OUTPUT_DIR,
+                    window_tag=DEFAULT_WINDOW_TAG,
+                )
                 print(f"图表已保存: {output_path}")
+
+                success_results[indicator_key] = {
+                    "df": window_df,
+                    "metrics": metrics,
+                }
                 success_count += 1
             except Exception as exc:
                 msg = f"Indicator failed -> index={index_name}, indicator={indicator_name}, reason={exc}"
                 print(msg)
                 failure_messages.append(msg)
                 continue
+
+        # 双指标组合图：仅在 PE 和 PB 均成功时导出。
+        if "pe" in success_results and "pb" in success_results:
+            combo_path = export_pe_pb_combo(
+                index_key=index_key,
+                index_name=index_name,
+                pe_df=success_results["pe"]["df"],
+                pe_metrics=success_results["pe"]["metrics"],
+                pb_df=success_results["pb"]["df"],
+                pb_metrics=success_results["pb"]["metrics"],
+                output_dir=OUTPUT_DIR,
+                window_tag=DEFAULT_WINDOW_TAG,
+            )
+            print(f"组合图已保存: {combo_path}")
 
     if success_count == 0:
         detail = "\n".join(failure_messages) if failure_messages else "No indicators were processed."
