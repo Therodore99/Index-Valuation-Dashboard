@@ -1,52 +1,74 @@
 ﻿# -*- coding: utf-8 -*-
-"""图片模板布局定义。"""
+"""Page templates for single and dual media-card layouts."""
 
 import matplotlib.pyplot as plt
 
-from core.style import COLORS, FIGSIZE, FONT_FAMILY, LAYOUT
+from core.style import COLORS, FIGSIZE, FONT_FAMILY, PAGE, SUMMARY_BAR
 
 plt.rcParams["font.sans-serif"] = FONT_FAMILY
 plt.rcParams["axes.unicode_minus"] = False
 
 
+SINGLE_REGIONS = {
+    "title": [PAGE["left"], 0.89, PAGE["content_width"], 0.055],
+    "meta": [PAGE["left"], 0.848, PAGE["content_width"], 0.03],
+    "summary": [PAGE["left"], 0.77, PAGE["content_width"], SUMMARY_BAR["height"]],
+    "chart": [PAGE["left"], 0.36, PAGE["content_width"], 0.355],
+    "conclusion": [PAGE["left"], 0.235, PAGE["content_width"], 0.06],
+    "footer": [PAGE["left"], 0.065, PAGE["content_width"], 0.035],
+}
+
+DUAL_REGIONS = {
+    "title": [PAGE["left"], 0.90, PAGE["content_width"], 0.05],
+    "meta": [PAGE["left"], 0.862, PAGE["content_width"], 0.028],
+    "summary": [PAGE["left"], 0.79, PAGE["content_width"], 0.06],
+    "pe_chart": [PAGE["left"], 0.53, PAGE["content_width"], 0.18],
+    "pb_chart": [PAGE["left"], 0.28, PAGE["content_width"], 0.18],
+    "conclusion": [PAGE["left"], 0.165, PAGE["content_width"], 0.055],
+    "footer": [PAGE["left"], 0.06, PAGE["content_width"], 0.03],
+}
+
+
+def _create_text_axis(fig, position):
+    ax = fig.add_axes(position)
+    ax.set_facecolor(COLORS["bg"])
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    return ax
+
+
+def _create_chart_axis(fig, position):
+    ax = fig.add_axes(position)
+    ax.set_facecolor(COLORS["bg"])
+    return ax
+
+
 def create_single_template():
-    """单指标图固定结构：标题、摘要、图表、结论、页脚。"""
+    """Create the single-indicator page skeleton."""
     fig = plt.figure(figsize=FIGSIZE, dpi=200, facecolor=COLORS["bg"])
-    gs = fig.add_gridspec(5, 1, height_ratios=[0.17, 0.20, 0.40, 0.15, 0.08])
     axes = {
-        "title": fig.add_subplot(gs[0]),
-        "summary": fig.add_subplot(gs[1]),
-        "chart": fig.add_subplot(gs[2]),
-        "conclusion": fig.add_subplot(gs[3]),
-        "footer": fig.add_subplot(gs[4]),
+        "title": _create_text_axis(fig, SINGLE_REGIONS["title"]),
+        "meta": _create_text_axis(fig, SINGLE_REGIONS["meta"]),
+        "summary": _create_text_axis(fig, SINGLE_REGIONS["summary"]),
+        "chart": _create_chart_axis(fig, SINGLE_REGIONS["chart"]),
+        "conclusion": _create_text_axis(fig, SINGLE_REGIONS["conclusion"]),
+        "footer": _create_text_axis(fig, SINGLE_REGIONS["footer"]),
     }
-    fig.subplots_adjust(
-        left=LAYOUT["left"],
-        right=LAYOUT["right"],
-        top=LAYOUT["top"],
-        bottom=LAYOUT["bottom"],
-        hspace=LAYOUT["hspace"],
-    )
     return fig, axes
 
 
 def create_dual_template():
-    """双指标图固定结构：标题、统一摘要、PE、PB、结论、页脚。"""
+    """Create the dual-indicator page skeleton."""
     fig = plt.figure(figsize=FIGSIZE, dpi=200, facecolor=COLORS["bg"])
-    gs = fig.add_gridspec(6, 1, height_ratios=[0.14, 0.15, 0.24, 0.24, 0.15, 0.08])
     axes = {
-        "title": fig.add_subplot(gs[0]),
-        "summary": fig.add_subplot(gs[1]),
-        "pe_chart": fig.add_subplot(gs[2]),
-        "pb_chart": fig.add_subplot(gs[3]),
-        "conclusion": fig.add_subplot(gs[4]),
-        "footer": fig.add_subplot(gs[5]),
+        "title": _create_text_axis(fig, DUAL_REGIONS["title"]),
+        "meta": _create_text_axis(fig, DUAL_REGIONS["meta"]),
+        "summary": _create_text_axis(fig, DUAL_REGIONS["summary"]),
+        "pe_chart": _create_chart_axis(fig, DUAL_REGIONS["pe_chart"]),
+        "pb_chart": _create_chart_axis(fig, DUAL_REGIONS["pb_chart"]),
+        "conclusion": _create_text_axis(fig, DUAL_REGIONS["conclusion"]),
+        "footer": _create_text_axis(fig, DUAL_REGIONS["footer"]),
     }
-    fig.subplots_adjust(
-        left=LAYOUT["left"],
-        right=LAYOUT["right"],
-        top=LAYOUT["top"],
-        bottom=LAYOUT["bottom"],
-        hspace=LAYOUT["hspace"],
-    )
     return fig, axes
