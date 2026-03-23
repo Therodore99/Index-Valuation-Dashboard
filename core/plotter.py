@@ -225,3 +225,4 @@ def render_footer(ax, start_date, end_date):
         f"数据区间：{start_date:%Y-%m-%d} ~ {end_date:%Y-%m-%d}  |  数据源：iFinD  |  生成：{generated}"
     )
     ax.text(0.01, 0.12, footer, fontsize=FONT_SIZE["footer"], color=COLORS["muted"], transform=ax.transAxes)
+
