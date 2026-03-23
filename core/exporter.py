@@ -33,7 +33,7 @@ def _meta_line(end_date, indicator_key: str, window_label: str) -> str:
 def _single_title(index_name: str, indicator_name: str, indicator_key: str, window_label: str) -> str:
     if indicator_key in {"pe", "pb"}:
         return f"{index_name}近{window_label}{indicator_name}估值"
-    return f"{index_name}近{window_label}{indicator_name}区间位置"
+    return f"{index_name}近{window_label}{indicator_name}相对位置"
 
 
 def _dual_title(index_name: str, window_label: str) -> str:
