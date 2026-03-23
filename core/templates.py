@@ -3,7 +3,7 @@
 
 import matplotlib.pyplot as plt
 
-from core.style import COLORS, FIGSIZE, FONT_FAMILY, PAGE, SUMMARY_BAR
+from core.style import COLORS, DUAL_LAYOUT, FIGSIZE, FONT_FAMILY, PAGE, SUMMARY_BAR
 
 plt.rcParams["font.sans-serif"] = FONT_FAMILY
 plt.rcParams["axes.unicode_minus"] = False
@@ -19,13 +19,13 @@ SINGLE_REGIONS = {
 }
 
 DUAL_REGIONS = {
-    "title": [PAGE["left"], 0.90, PAGE["content_width"], 0.05],
-    "meta": [PAGE["left"], 0.862, PAGE["content_width"], 0.028],
-    "summary": [PAGE["left"], 0.79, PAGE["content_width"], 0.06],
-    "pe_chart": [PAGE["left"], 0.53, PAGE["content_width"], 0.18],
-    "pb_chart": [PAGE["left"], 0.28, PAGE["content_width"], 0.18],
-    "conclusion": [PAGE["left"], 0.165, PAGE["content_width"], 0.055],
-    "footer": [PAGE["left"], 0.06, PAGE["content_width"], 0.03],
+    "title": [PAGE["left"], DUAL_LAYOUT["title_y"], PAGE["content_width"], DUAL_LAYOUT["title_h"]],
+    "meta": [PAGE["left"], DUAL_LAYOUT["meta_y"], PAGE["content_width"], DUAL_LAYOUT["meta_h"]],
+    "summary": [PAGE["left"], DUAL_LAYOUT["top_divider_y"], PAGE["content_width"], DUAL_LAYOUT["top_divider_h"]],
+    "pe_chart": [PAGE["left"], DUAL_LAYOUT["pe_chart_y"], PAGE["content_width"], DUAL_LAYOUT["pe_chart_h"]],
+    "pb_chart": [PAGE["left"], DUAL_LAYOUT["pb_chart_y"], PAGE["content_width"], DUAL_LAYOUT["pb_chart_h"]],
+    "conclusion": [PAGE["left"], DUAL_LAYOUT["conclusion_y"], PAGE["content_width"], DUAL_LAYOUT["conclusion_h"]],
+    "footer": [PAGE["left"], DUAL_LAYOUT["footer_y"], PAGE["content_width"], DUAL_LAYOUT["footer_h"]],
 }
 
 
