@@ -6,7 +6,7 @@ import math
 import matplotlib.dates as mdates
 import pandas as pd
 
-from core.style import CHART, COLORS, FONT_SIZE, VALUATION_QUANTILES
+from core.style import CHART, COLORS, FONT_SIZE, SINGLE_LAYOUT, VALUATION_QUANTILES
 
 
 def valuation_status(position_pct: float) -> str:
@@ -79,6 +79,36 @@ def _draw_quantile_lines(ax, values: pd.Series):
                 va="bottom",
             )
             label_idx += 1
+
+
+def _adapt_single_chart_left_margin(ax):
+    """Increase the single-chart left gutter only when y tick labels are too close to the page edge."""
+    fig = ax.figure
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+
+    labels = [label for label in ax.get_yticklabels() if label.get_text().strip()]
+    if not labels:
+        return
+
+    min_left_px = min(label.get_window_extent(renderer=renderer).x0 for label in labels)
+    fig_width_px = fig.bbox.width
+    target_left_px = fig_width_px * SINGLE_LAYOUT["chart_safe_left"]
+
+    if min_left_px >= target_left_px:
+        return
+
+    shift_px = (target_left_px - min_left_px) + SINGLE_LAYOUT["chart_label_padding_px"]
+    shift_frac = min(shift_px / fig_width_px, SINGLE_LAYOUT["chart_max_left_shift"])
+
+    pos = ax.get_position()
+    max_shift_frac = max(pos.width - SINGLE_LAYOUT["chart_min_width"], 0.0)
+    shift_frac = min(shift_frac, max_shift_frac)
+    if shift_frac <= 0:
+        return
+
+    ax.set_position([pos.x0 + shift_frac, pos.y0, pos.width - shift_frac, pos.height])
+    fig.canvas.draw()
 
 
 def _point_to_segment_distance(px, py, ax, ay, bx, by):
@@ -228,7 +258,17 @@ def _draw_chart_summary(ax, summary_segments=None, accent_indices=None):
 
     for i in range(1, len(positions)):
         divider_x = (positions[i - 1] + positions[i]) / 2
-        ax.text(divider_x, CHART["dual_chart_summary_y"], "|", transform=ax.transAxes, ha="center", va="center", fontsize=FONT_SIZE["dual_chart_summary"], color=COLORS["muted"], clip_on=False)
+        ax.text(
+            divider_x,
+            CHART["dual_chart_summary_y"],
+            "|",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+            fontsize=FONT_SIZE["dual_chart_summary"],
+            color=COLORS["muted"],
+            clip_on=False,
+        )
 
     for idx, (xp, text) in enumerate(zip(positions, summary_segments)):
         ax.text(
@@ -253,6 +293,7 @@ def plot_indicator_chart(
     with_quantiles: bool,
     chart_summary_segments=None,
     chart_summary_accent_indices=None,
+    adaptive_left_margin: bool = False,
 ) -> None:
     x = pd.to_datetime(df["date"])
     y = pd.to_numeric(df["value"], errors="coerce")
@@ -265,9 +306,13 @@ def plot_indicator_chart(
 
     ax.fill_between(x, y, y2=float(y.min()), color=COLORS["fill"], alpha=CHART["fill_alpha"], zorder=2)
     ax.plot(x, y, color=COLORS["line"], linewidth=CHART["line_width"], zorder=3)
+    ax.margins(x=CHART["x_margin"])
+
+    if adaptive_left_margin:
+        _adapt_single_chart_left_margin(ax)
+
     _draw_current_marker(ax, x, y, current_label, with_quantiles)
 
     title_pad = CHART["dual_chart_title_pad"] if chart_summary_segments else 8
     ax.set_title(chart_title, loc="left", fontsize=FONT_SIZE["section"], color=COLORS["primary"], weight="bold", pad=title_pad)
     _draw_chart_summary(ax, chart_summary_segments, chart_summary_accent_indices)
-    ax.margins(x=CHART["x_margin"])

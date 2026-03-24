@@ -61,7 +61,7 @@ def _render_single_summary_bar(ax, indicator_key: str, indicator_name: str, metr
     _prepare_summary_axis(ax)
 
     if indicator_key in {"pe", "pb"}:
-        segments = [f"当前 {metrics['current_value']:.2f}", f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
+        segments = [indicator_name, f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
         accent_indices = {2}
         dividers = [1 / 3, 2 / 3]
         centers = [1 / 6, 0.5, 5 / 6]
@@ -105,29 +105,57 @@ def _render_dual_dividers(fig):
     y_positions = [
         DUAL_REGIONS["summary"][1] + DUAL_REGIONS["summary"][3] / 2,
         (DUAL_REGIONS["pe_chart"][1] + (DUAL_REGIONS["pb_chart"][1] + DUAL_REGIONS["pb_chart"][3])) / 2,
-        (DUAL_REGIONS["pb_chart"][1] + (DUAL_REGIONS["conclusion"][1] + DUAL_REGIONS["conclusion"][3])) / 2,
-        (DUAL_REGIONS["conclusion"][1] + (DUAL_REGIONS["footer"][1] + DUAL_REGIONS["footer"][3])) / 2,
+        (DUAL_REGIONS["pb_chart"][1] + DUAL_REGIONS["footer"][1] + DUAL_REGIONS["footer"][3]) / 2,
     ]
 
     for y in y_positions:
         fig.add_artist(
-            Line2D([left, right], [y, y], transform=fig.transFigure, color=DIVIDER["color"], alpha=DIVIDER["alpha"], linewidth=DIVIDER["line_width"], zorder=0)
+            Line2D(
+                [left, right],
+                [y, y],
+                transform=fig.transFigure,
+                color=DIVIDER["color"],
+                alpha=DIVIDER["alpha"],
+                linewidth=DIVIDER["line_width"],
+                zorder=0,
+            )
         )
+
+
+def _single_close_conclusion(window_label: str, metrics: dict) -> str:
+    position_pct = metrics["position_pct"]
+    if position_pct < 20:
+        lead = f"当前点位已靠近近{window_label}区间下沿，更反映阶段位置偏弱，不直接代表估值高低。"
+    elif position_pct < 40:
+        lead = f"当前点位位于近{window_label}偏低区域，更适合作为阶段位置观察，而不是单独判断便宜或昂贵。"
+    elif position_pct <= 60:
+        lead = f"当前点位处于近{window_label}区间中部，阶段位置相对均衡，更适合继续跟踪方向选择。"
+    elif position_pct <= 80:
+        lead = f"当前点位已回到近{window_label}偏高区域，说明阶段位置已有修复，但位置本身不等同于高估。"
+    else:
+        lead = f"当前点位接近近{window_label}区间上沿，更多体现阶段位置偏强，仍需与估值判断分开看待。"
+
+    tail = f"近{window_label}观察区间约为{metrics['min_value']:.2f}-{metrics['max_value']:.2f}。"
+    return lead + tail
+
+
+def _single_valuation_conclusion(indicator_name: str, window_label: str, metrics: dict) -> str:
+    position_pct = metrics["position_pct"]
+    if position_pct < 10:
+        return f"当前{indicator_name}已进入近{window_label}极低区间，市场定价明显偏谨慎，后续更值得跟踪修复弹性。"
+    if position_pct < 30:
+        return f"当前{indicator_name}位于近{window_label}偏低区间，若预期改善，后续更值得关注修复空间。"
+    if position_pct <= 70:
+        return f"当前{indicator_name}仍处于近{window_label}中低至中性区间，市场定价相对克制，更应观察修复而非扩张。"
+    if position_pct <= 90:
+        return f"当前{indicator_name}已进入近{window_label}偏高区间，后续更需要观察业绩兑现对估值的消化能力。"
+    return f"当前{indicator_name}处于近{window_label}较高区间，后续更应关注预期兑现与估值压缩的平衡。"
 
 
 def _single_conclusion(indicator_key: str, indicator_name: str, metrics: dict, window_label: str) -> str:
     if indicator_key in {"pe", "pb"}:
-        return f"当前{indicator_name}位于近{window_label}{metrics['position_pct']:.1f}%分位，处于{plotter.valuation_status(metrics['position_pct'])}区间。"
-    return (
-        f"当前点位位于近{window_label}区间的{metrics['position_pct']:.1f}%位置，"
-        f"当前观察区间为{metrics['min_value']:.2f}-{metrics['max_value']:.2f}。"
-    )
-
-
-def _dual_conclusion(pe_metrics: dict, pb_metrics: dict) -> str:
-    pe_status = plotter.valuation_status(pe_metrics["position_pct"])
-    pb_status = plotter.valuation_status(pb_metrics["position_pct"])
-    return f"PE处于{pe_status}区间，PB处于{pb_status}区间，整体估值水平以中期分位跟踪为主。"
+        return _single_valuation_conclusion(indicator_name, window_label, metrics)
+    return _single_close_conclusion(window_label, metrics)
 
 
 def _dual_chart_summary_segments(metrics: dict):
@@ -173,9 +201,19 @@ def export_single_indicator(
         chart_title=indicator_name,
         current_label=f"当前 {metrics['current_value']:.2f}",
         with_quantiles=indicator_key in {"pe", "pb"},
+        adaptive_left_margin=True,
     )
 
-    axes["conclusion"].text(0.0, 0.5, _single_conclusion(indicator_key, indicator_name, metrics, window_label), ha="left", va="center", fontsize=FONT_SIZE["conclusion"], color=COLORS["text"])
+    axes["conclusion"].text(
+        0.0,
+        0.5,
+        _single_conclusion(indicator_key, indicator_name, metrics, window_label),
+        ha="left",
+        va="center",
+        fontsize=FONT_SIZE["conclusion"],
+        color=COLORS["text"],
+        wrap=True,
+    )
     _render_footer(axes["footer"], metrics["start_date"], metrics["end_date"])
 
     fig.savefig(output_path, facecolor=fig.get_facecolor())
@@ -227,8 +265,6 @@ def export_pe_pb_combo(
         chart_summary_accent_indices=pb_accent,
     )
 
-    axes["conclusion"].text(0.0, 0.5, _dual_conclusion(pe_metrics, pb_metrics), ha="left", va="center", fontsize=FONT_SIZE["conclusion"], color=COLORS["text"])
-
     start_date = max(pe_metrics["start_date"], pb_metrics["start_date"])
     end_date = min(pe_metrics["end_date"], pb_metrics["end_date"])
     _render_footer(axes["footer"], start_date, end_date)
@@ -236,4 +272,3 @@ def export_pe_pb_combo(
     fig.savefig(output_path, facecolor=fig.get_facecolor())
     plt.close(fig)
     return output_path
-

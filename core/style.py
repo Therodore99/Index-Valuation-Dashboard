@@ -28,10 +28,10 @@ FONT_FAMILY = [
 ]
 
 FONT_SIZE = {
-    "title": 28,
+    "title": 30,
     "meta": 15,
     "summary_main": 20,
-    "summary_sub": 10,
+    "summary_sub": 16,
     "section": 22,
     "chart_subtitle": 17,
     "current_label": 14,
@@ -54,6 +54,13 @@ SUMMARY_BAR = {
     "divider_width": 0.8,
 }
 
+SINGLE_LAYOUT = {
+    "chart_safe_left": 0.015,
+    "chart_label_padding_px": 12,
+    "chart_max_left_shift": 0.06,
+    "chart_min_width": 0.79,
+}
+
 CHART = {
     "fill_alpha": 0.7,
     "line_width": 2.9,
@@ -67,9 +74,9 @@ CHART = {
         "right_down": (14, -16),
         "left_down": (-14, -16),
     },
-    "dual_chart_summary_y": 1.045,
+    "dual_chart_summary_y": 1.04,
     "dual_chart_summary_gap": 0.27,
-    "dual_chart_title_pad": 22,
+    "dual_chart_title_pad": 20,
     "quantile_label_safe_left": 118,
 }
 
@@ -78,14 +85,12 @@ DUAL_LAYOUT = {
     "title_h": 0.043,
     "meta_y": 0.879,
     "meta_h": 0.022,
-    "top_divider_y": 0.842,
-    "top_divider_h": 0.012,
-    "pe_chart_y": 0.562,
-    "pe_chart_h": 0.250,
-    "pb_chart_y": 0.272,
-    "pb_chart_h": 0.200,
-    "conclusion_y": 0.157,
-    "conclusion_h": 0.05,
+    "top_divider_y": 0.844,
+    "top_divider_h": 0.010,
+    "pe_chart_y": 0.544,
+    "pe_chart_h": 0.238,
+    "pb_chart_y": 0.188,
+    "pb_chart_h": 0.238,
     "footer_y": 0.068,
     "footer_h": 0.028,
 }

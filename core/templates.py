@@ -13,8 +13,8 @@ SINGLE_REGIONS = {
     "title": [PAGE["left"], 0.89, PAGE["content_width"], 0.055],
     "meta": [PAGE["left"], 0.848, PAGE["content_width"], 0.03],
     "summary": [PAGE["left"], 0.77, PAGE["content_width"], SUMMARY_BAR["height"]],
-    "chart": [PAGE["left"], 0.36, PAGE["content_width"], 0.355],
-    "conclusion": [PAGE["left"], 0.235, PAGE["content_width"], 0.06],
+    "chart": [PAGE["left"], 0.32, PAGE["content_width"], 0.355],
+    "conclusion": [PAGE["left"], 0.155, PAGE["content_width"], 0.06],
     "footer": [PAGE["left"], 0.065, PAGE["content_width"], 0.035],
 }
 
@@ -24,7 +24,6 @@ DUAL_REGIONS = {
     "summary": [PAGE["left"], DUAL_LAYOUT["top_divider_y"], PAGE["content_width"], DUAL_LAYOUT["top_divider_h"]],
     "pe_chart": [PAGE["left"], DUAL_LAYOUT["pe_chart_y"], PAGE["content_width"], DUAL_LAYOUT["pe_chart_h"]],
     "pb_chart": [PAGE["left"], DUAL_LAYOUT["pb_chart_y"], PAGE["content_width"], DUAL_LAYOUT["pb_chart_h"]],
-    "conclusion": [PAGE["left"], DUAL_LAYOUT["conclusion_y"], PAGE["content_width"], DUAL_LAYOUT["conclusion_h"]],
     "footer": [PAGE["left"], DUAL_LAYOUT["footer_y"], PAGE["content_width"], DUAL_LAYOUT["footer_h"]],
 }
 
@@ -60,7 +59,7 @@ def create_single_template():
 
 
 def create_dual_template():
-    """Create the dual-indicator page skeleton."""
+    """Create the dual-indicator page skeleton without a shared conclusion block."""
     fig = plt.figure(figsize=FIGSIZE, dpi=200, facecolor=COLORS["bg"])
     axes = {
         "title": _create_text_axis(fig, DUAL_REGIONS["title"]),
@@ -68,7 +67,6 @@ def create_dual_template():
         "summary": _create_text_axis(fig, DUAL_REGIONS["summary"]),
         "pe_chart": _create_chart_axis(fig, DUAL_REGIONS["pe_chart"]),
         "pb_chart": _create_chart_axis(fig, DUAL_REGIONS["pb_chart"]),
-        "conclusion": _create_text_axis(fig, DUAL_REGIONS["conclusion"]),
         "footer": _create_text_axis(fig, DUAL_REGIONS["footer"]),
     }
     return fig, axes
