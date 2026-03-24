@@ -195,6 +195,9 @@ def _draw_current_marker(ax, x: pd.Series, y: pd.Series, current_label: str, wit
     current_y = float(y.iloc[-1])
     ax.scatter([current_x], [current_y], color=COLORS["accent"], s=CHART["marker_size"], zorder=4)
 
+    if not current_label:
+        return
+
     ax.figure.canvas.draw()
 
     display_points = ax.transData.transform(list(zip(mdates.date2num(x), y)))

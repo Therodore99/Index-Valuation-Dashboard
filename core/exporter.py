@@ -282,7 +282,7 @@ def export_single_indicator(
         axes["chart"],
         df,
         chart_title=indicator_name,
-        current_label=f"当前 {metrics['current_value']:.2f}",
+        current_label="",
         with_quantiles=indicator_key in {"pe", "pb"},
         adaptive_left_margin=True,
     )
@@ -336,7 +336,7 @@ def export_pe_pb_combo(
         axes["pe_chart"],
         pe_df,
         chart_title="PE",
-        current_label=f"当前 {pe_metrics['current_value']:.2f}",
+        current_label="",
         with_quantiles=True,
         chart_summary_segments=pe_segments,
         chart_summary_accent_indices=pe_accent,
@@ -345,7 +345,7 @@ def export_pe_pb_combo(
         axes["pb_chart"],
         pb_df,
         chart_title="PB",
-        current_label=f"当前 {pb_metrics['current_value']:.2f}",
+        current_label="",
         with_quantiles=True,
         chart_summary_segments=pb_segments,
         chart_summary_accent_indices=pb_accent,
@@ -358,4 +358,5 @@ def export_pe_pb_combo(
     fig.savefig(output_path, facecolor=fig.get_facecolor())
     plt.close(fig)
     return output_path
+
 
