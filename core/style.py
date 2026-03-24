@@ -28,10 +28,10 @@ FONT_FAMILY = [
 ]
 
 FONT_SIZE = {
-    "title": 30,
+    "title": 28,
     "meta": 15,
-    "summary_main": 24,
-    "summary_sub": 16,
+    "summary_main": 20,
+    "summary_sub": 10,
     "section": 22,
     "chart_subtitle": 17,
     "current_label": 14,
@@ -49,9 +49,9 @@ PAGE = {
 }
 
 SUMMARY_BAR = {
-    "height": 0.075,
-    "padding_x": 0.04,
-    "divider_width": 1.0,
+    "height": 0.058,
+    "padding_x": 0.06,
+    "divider_width": 0.8,
 }
 
 CHART = {
@@ -100,4 +100,4 @@ DIVIDER = {
 
 VALUATION_QUANTILES = [0.10, 0.25, 0.50, 0.75, 0.90]
 
-BRAND_TEXT = "@指数估值策略室"
+BRAND_TEXT = ""

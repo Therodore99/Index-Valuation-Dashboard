@@ -61,7 +61,7 @@ def _render_single_summary_bar(ax, indicator_key: str, indicator_name: str, metr
     _prepare_summary_axis(ax)
 
     if indicator_key in {"pe", "pb"}:
-        segments = [indicator_name, f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
+        segments = [f"当前 {metrics['current_value']:.2f}", f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
         accent_indices = {2}
         dividers = [1 / 3, 2 / 3]
         centers = [1 / 6, 0.5, 5 / 6]
@@ -141,7 +141,7 @@ def _render_footer(ax, start_date, end_date) -> None:
     for spine in ax.spines.values():
         spine.set_visible(False)
 
-    left = f"数据区间：{start_date:%Y-%m-%d} ~ {end_date:%Y-%m-%d} ｜ 数据来源：同花顺iFinD"
+    left = f"统计周期：{start_date:%Y-%m-%d} ~ {end_date:%Y-%m-%d} ｜ 发布时间不足5年的指数均使用上市以来数据"
     ax.text(0.0, 0.5, left, ha="left", va="center", fontsize=FONT_SIZE["footer"], color=COLORS["muted"])
     ax.text(1.0, 0.5, BRAND_TEXT, ha="right", va="center", fontsize=FONT_SIZE["footer"], color=COLORS["muted"])
 
