@@ -61,7 +61,7 @@ def _render_single_summary_bar(ax, indicator_key: str, indicator_name: str, metr
     _prepare_summary_axis(ax)
 
     if indicator_key in {"pe", "pb"}:
-        segments = [indicator_name, f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
+        segments = [f"当前 {metrics['current_value']:.2f}", f"{metrics['position_pct']:.1f}%分位", plotter.valuation_status(metrics["position_pct"])]
         accent_indices = {2}
         dividers = [1 / 3, 2 / 3]
         centers = [1 / 6, 0.5, 5 / 6]
@@ -122,21 +122,104 @@ def _render_dual_dividers(fig):
         )
 
 
+def _measure_text_width(ax, text: str, fontsize: int, renderer) -> float:
+    """Measure text width in pixels inside the given axis."""
+    probe = ax.text(0.0, 0.0, text, fontsize=fontsize, alpha=0.0, transform=ax.transAxes)
+    width = probe.get_window_extent(renderer=renderer).width
+    probe.remove()
+    return width
+
+
+def _split_token_by_width(ax, token: str, fontsize: int, max_width_px: float, renderer) -> list[str]:
+    """Split an overlong token by characters so each piece can fit the line width."""
+    pieces = []
+    current = ""
+    for char in token:
+        trial = current + char
+        if not current or _measure_text_width(ax, trial, fontsize, renderer) <= max_width_px:
+            current = trial
+        else:
+            pieces.append(current)
+            current = char
+
+    if current:
+        pieces.append(current)
+    return pieces
+
+
+def _fit_text_to_width(ax, text: str, fontsize: int, max_width_px: float, renderer) -> str:
+    """Trim the last line with an ellipsis when the remaining text still cannot fit."""
+    if _measure_text_width(ax, text, fontsize, renderer) <= max_width_px:
+        return text
+
+    fitted = ""
+    for char in text:
+        trial = fitted + char
+        if _measure_text_width(ax, trial + "…", fontsize, renderer) <= max_width_px:
+            fitted = trial
+        else:
+            break
+
+    if not fitted:
+        return text[:1]
+    return fitted + "…"
+
+
+def _wrap_conclusion_text(ax, text: str, fontsize: int, max_width_ratio: float = 0.94, max_lines: int = 3) -> str:
+    """Wrap single-indicator conclusions against the actual conclusion-axis width."""
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    max_width_px = ax.get_window_extent(renderer=renderer).width * max_width_ratio
+
+    tokens = [token for token in re.split(r"(?<=[，。；：、])", text) if token]
+    units = []
+    for token in tokens:
+        if _measure_text_width(ax, token, fontsize, renderer) <= max_width_px:
+            units.append(token)
+        else:
+            units.extend(_split_token_by_width(ax, token, fontsize, max_width_px, renderer))
+
+    lines = []
+    current = ""
+    for idx, unit in enumerate(units):
+        trial = current + unit
+        if not current:
+            current = unit
+            continue
+
+        if _measure_text_width(ax, trial, fontsize, renderer) <= max_width_px:
+            current = trial
+            continue
+
+        lines.append(current.strip())
+        current = unit
+
+        if max_lines and len(lines) >= max_lines - 1:
+            remaining = current + "".join(units[idx + 1 :])
+            lines.append(_fit_text_to_width(ax, remaining.strip(), fontsize, max_width_px, renderer))
+            return "\n".join(lines)
+
+    if current:
+        lines.append(current.strip())
+
+    return "\n".join(lines[:max_lines] if max_lines else lines)
+
+
 def _single_close_conclusion(window_label: str, metrics: dict) -> str:
     position_pct = metrics["position_pct"]
-    if position_pct < 20:
-        lead = f"当前点位已靠近近{window_label}区间下沿，更反映阶段位置偏弱，不直接代表估值高低。"
-    elif position_pct < 40:
-        lead = f"当前点位位于近{window_label}偏低区域，更适合作为阶段位置观察，而不是单独判断便宜或昂贵。"
-    elif position_pct <= 60:
-        lead = f"当前点位处于近{window_label}区间中部，阶段位置相对均衡，更适合继续跟踪方向选择。"
-    elif position_pct <= 80:
-        lead = f"当前点位已回到近{window_label}偏高区域，说明阶段位置已有修复，但位置本身不等同于高估。"
-    else:
-        lead = f"当前点位接近近{window_label}区间上沿，更多体现阶段位置偏强，仍需与估值判断分开看待。"
+    # if position_pct < 20:
+    #     lead = f"当前点位已靠近近{window_label}区间下沿，更反映阶段位置偏弱，不直接代表估值高低。"
+    # elif position_pct < 40:
+    #     lead = f"当前点位位于近{window_label}偏低区域，更适合作为阶段位置观察，而不是单独判断便宜或昂贵。"
+    # elif position_pct <= 60:
+    #     lead = f"当前点位处于近{window_label}区间中部，阶段位置相对均衡，更适合继续跟踪方向选择。"
+    # elif position_pct <= 80:
+    #     lead = f"当前点位已回到近{window_label}偏高区域，说明阶段位置已有修复，但位置本身不等同于高估。"
+    # else:
+    #     lead = f"当前点位接近近{window_label}区间上沿，更多体现阶段位置偏强，仍需与估值判断分开看待。"
 
     tail = f"近{window_label}观察区间约为{metrics['min_value']:.2f}-{metrics['max_value']:.2f}。"
-    return lead + tail
+    return tail
 
 
 def _single_valuation_conclusion(indicator_name: str, window_label: str, metrics: dict) -> str:
@@ -204,15 +287,18 @@ def export_single_indicator(
         adaptive_left_margin=True,
     )
 
+    conclusion_text = _single_conclusion(indicator_key, indicator_name, metrics, window_label)
+    wrapped_conclusion = _wrap_conclusion_text(axes["conclusion"], conclusion_text, FONT_SIZE["conclusion"], max_width_ratio=0.95, max_lines=3)
     axes["conclusion"].text(
         0.0,
         0.5,
-        _single_conclusion(indicator_key, indicator_name, metrics, window_label),
+        wrapped_conclusion,
         ha="left",
         va="center",
         fontsize=FONT_SIZE["conclusion"],
         color=COLORS["text"],
-        wrap=True,
+        linespacing=1.35,
+        wrap=False,
     )
     _render_footer(axes["footer"], metrics["start_date"], metrics["end_date"])
 
@@ -272,3 +358,4 @@ def export_pe_pb_combo(
     fig.savefig(output_path, facecolor=fig.get_facecolor())
     plt.close(fig)
     return output_path
+

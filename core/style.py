@@ -36,7 +36,7 @@ FONT_SIZE = {
     "chart_subtitle": 17,
     "current_label": 14,
     "dual_chart_summary": 17,
-    "conclusion": 19,
+    "conclusion": 18,
     "axis": 13,
     "quantile_label": 12,
     "footer": 13,
@@ -69,10 +69,10 @@ CHART = {
     "x_margin": 0.015,
     "current_label_min_distance": 18,
     "current_label_candidate_offsets": {
-        "right_up": (14, 16),
-        "left_up": (-14, 16),
-        "right_down": (14, -16),
-        "left_down": (-14, -16),
+        "right_up": (18, 20),
+        "left_up": (-18, 20),
+        "right_down": (18, -20),
+        "left_down": (-18, -20),
     },
     "dual_chart_summary_y": 1.04,
     "dual_chart_summary_gap": 0.27,
@@ -106,3 +106,4 @@ DIVIDER = {
 VALUATION_QUANTILES = [0.10, 0.25, 0.50, 0.75, 0.90]
 
 BRAND_TEXT = ""
+
