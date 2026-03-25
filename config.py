@@ -22,8 +22,26 @@ INDEXES = {
     "hstech": {
         "display_name": "恒生科技指数",
         "code": "HSTECH.HK",
+    },
+    "hs300": {
+        "display_name": "沪深300指数",
+        "code": "000300.SH",
+    },
+    "zz500": {
+        "display_name": "中证500指数",
+        "code": "000905.SH",
+    },
+    "hsi": {
+        "display_name": "恒生指数",
+        "code": "HSI.HK",
+    },
+    "ndx100": {
+        "display_name": "纳斯达克100指数",
+        "code": "NDX.GI",
     }
 }
+
+
 DEFAULT_INDEX_KEY = "hstech"
 
 # 指标配置：统一走配置驱动。
