@@ -40,16 +40,15 @@ def _configure_axis(ax):
 def _configure_time_axis(ax, x: pd.Series):
     span_days = max((x.iloc[-1] - x.iloc[0]).days, 1)
     if span_days <= 450:
-        interval = 2
+        locator = mdates.MonthLocator(interval=2)
+        formatter = mdates.DateFormatter("%Y-%m")
     elif span_days <= 1200:
-        interval = 4
-    elif span_days <= 2200:
-        interval = 6
+        locator = mdates.MonthLocator(interval=4)
+        formatter = mdates.DateFormatter("%Y-%m")
     else:
-        interval = 12
+        locator = mdates.YearLocator(base=1)
+        formatter = mdates.DateFormatter("%Y-%m")
 
-    locator = mdates.MonthLocator(interval=interval)
-    formatter = mdates.DateFormatter("%Y-%m")
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
 
@@ -319,3 +318,6 @@ def plot_indicator_chart(
     title_pad = CHART["dual_chart_title_pad"] if chart_summary_segments else 8
     ax.set_title(chart_title, loc="left", fontsize=FONT_SIZE["section"], color=COLORS["primary"], weight="bold", pad=title_pad)
     _draw_chart_summary(ax, chart_summary_segments, chart_summary_accent_indices)
+
+
+
