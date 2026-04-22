@@ -14,8 +14,8 @@ DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "outputs"
 
 # 默认分析周期：近 365 天（1 年）
-DEFAULT_WINDOW_DAYS = 365
-DEFAULT_WINDOW_TAG = "1y"
+DEFAULT_WINDOW_DAYS = 365*5
+DEFAULT_WINDOW_TAG = "5y"
 
 # 指数配置：当前默认恒生科技指数，后续可继续扩展。
 INDEXES = {
@@ -46,6 +46,10 @@ INDEXES = {
     "kospi": {
         "display_name": "韩国KOPSI指数",
         "code": "KS11.GI",
+    },
+    "创业板50": {
+        "display_name": "创业板50指数",
+        "code": "399673.SZ",
     }
 }
 
